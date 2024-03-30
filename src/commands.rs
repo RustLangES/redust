@@ -4,6 +4,7 @@ use std::sync::{Arc, Mutex};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 pub struct CommandsEval {
+    pub admin_password: String,
     pub database: Arc<Mutex<MemoryDb>>,
 }
 
@@ -33,7 +34,7 @@ impl CommandsEval {
             return "Invalid command".to_string();
         }
 
-        if command[1] == "password" {
+        if command[1] == self.admin_password {
             client_state.auth = true;
             return "OK".to_string();
         }
