@@ -1,10 +1,10 @@
 use std::sync::{Arc, Mutex};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
-use toml::Value;
 
 use crate::client_state::ClientState;
 use crate::commands::CommandsEval;
+use crate::config::RedustConfig;
 use crate::memory::MemoryDb;
 
 pub struct Redust {
@@ -14,20 +14,14 @@ pub struct Redust {
 }
 
 impl Redust {
-    pub async fn new(addr: &str) -> Result<Self, Box<dyn std::error::Error>> {
+    pub async fn new() -> Result<Self, Box<dyn std::error::Error>> {
+        let config = RedustConfig::new("config.toml")?;
+
+        let admin_password = config.admin_password;
+        let addr = config.address;
+
         let tcp_listener = TcpListener::bind(addr).await?;
-
         let data = Arc::new(Mutex::new(MemoryDb::new()));
-
-        let config = std::fs::read_to_string("config.toml")?;
-        let config: Value = toml::from_str(&config)?;
-
-        let admin_password = config
-            .get("password")
-            .and_then(|value| value.as_str())
-            .unwrap_or("password")
-            .to_owned();
-
         let eval = Arc::new(Mutex::new(CommandsEval {
             admin_password,
             database: data.clone(),
