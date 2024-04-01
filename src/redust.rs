@@ -18,7 +18,7 @@ impl Redust {
         let config = RedustConfig::new("config.toml")?;
 
         let admin_password = config.admin_password;
-        let addr = config.address;
+        let addr = config.address.clone();
 
         let tcp_listener = TcpListener::bind(addr).await?;
         let data = Arc::new(Mutex::new(MemoryDb::new()));
@@ -26,6 +26,9 @@ impl Redust {
             admin_password,
             database: data.clone(),
         }));
+
+        let addr = config.address;
+        println!("Server running on {}", addr);
 
         Ok(Self {
             tcp_listener,

@@ -1,4 +1,3 @@
-from typing import Any, Self
 from socket import socket, AF_INET, SOCK_STREAM
 
 import json 
@@ -15,7 +14,7 @@ class Redust:
     def _send_cmd(self: object, cmd: list[str]) -> str:
         self.sock.send("\n".join(cmd).encode() + b';')
         msg = self.sock.recv(8192)
-        return msg.decode()
+        return msg.decode("utf-8")
 
     def auth(self: object, password: str) -> str:
         return self._send_cmd(['AUTH', password])
@@ -64,31 +63,3 @@ class Redust:
     
     def persist(self: object, key: str) -> str:
         return self._send_cmd(['PERSIST', key])
-
-if __name__ == '__main__':
-    redust = Redust(('localhost', 6969))
-
-    print(redust.get('bar'))
-    print(redust.auth('password'))
-
-    print(redust.set('foo', 'bar'))
-    print(redust.rename('foo', 'bar'))
-    print(redust.get('bar'))
-    print(redust.exists('foo'))
-
-    print(redust.copy('bar', 'foo'))
-    print(redust.exists('foo'))
-
-    print(redust.delete('foo', 'bar'))
-    print(redust.exists('foo', 'bar'))
-
-    print(redust.set('foo', 1))
-    print(redust.increment('foo', 1))
-    print(redust.expire('foo', 5))
-    print(redust.ttl('foo'))
-    print(redust.expiretime('foo', 10))
-
-    print(redust.persist('foo'))
-    print(redust.ttl('foo'))
-
-    redust.close()

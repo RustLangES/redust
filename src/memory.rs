@@ -1,4 +1,7 @@
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 #[derive(Clone)]
 pub enum Value {
@@ -11,6 +14,8 @@ pub enum Value {
 #[derive(Clone)]
 pub struct DBValue {
     pub ttl: i64,
+    pub last_modified: i64,
+    pub last_accessed: i64,
     pub value: Value,
 }
 
@@ -45,12 +50,41 @@ impl MemoryDb {
         self.database.get(key).map(|v| v.ttl).unwrap_or(-2)
     }
 
-    pub fn get(&self, key: &str) -> Option<&Value> {
-        self.database.get(key).map(|v| &v.value)
+    pub fn exists(&self, key: &str) -> bool {
+        self.database.contains_key(key)
+    }
+
+    pub fn get(&mut self, key: &str) -> Option<&Value> {
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs() as i64;
+
+        let element = self.database.get_mut(key);
+
+        if let Some(v) = element {
+            v.last_accessed = now;
+            return Some(&v.value);
+        } else {
+            return None;
+        }
     }
 
     pub fn set(&mut self, key: String, value: Value) {
-        self.database.insert(key, DBValue { ttl: -1, value });
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs() as i64;
+
+        self.database.insert(
+            key,
+            DBValue {
+                ttl: -1,
+                last_accessed: now,
+                last_modified: now,
+                value,
+            },
+        );
     }
 
     pub fn set_ttl(&mut self, key: String, ttl: i64) {

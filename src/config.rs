@@ -19,7 +19,7 @@ impl RedustConfig {
         let address = config
             .get("address")
             .and_then(|value| value.as_str())
-            .unwrap_or("localhost:6969")
+            .unwrap_or("127.0.0.1:6969")
             .to_owned();
 
         Ok(Self {

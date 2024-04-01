@@ -65,11 +65,11 @@ impl CommandsEval {
             return "Invalid command".to_string();
         }
 
-        let db = self.database.lock().unwrap();
+        let mut db = self.database.lock().unwrap();
         let value = db.get(command[1]);
 
         if value.is_none() {
-            return "Key does not exist".to_string();
+            return "Not found".to_string();
         }
 
         value.unwrap().to_string()
@@ -187,7 +187,7 @@ impl CommandsEval {
         let exists = db.get_ttl(command[1]) != -2;
 
         if !exists {
-            return "Key does not exist".to_string();
+            return "Not found".to_string();
         }
 
         db.set_ttl(command[1].to_string(), time);
@@ -257,7 +257,7 @@ impl CommandsEval {
         let mut count = 0;
 
         for key in command.iter().skip(1) {
-            if db.get_ttl(key) != -2 {
+            if db.exists(key) {
                 count += 1;
             }
         }
@@ -275,7 +275,7 @@ impl CommandsEval {
         let exists = db.get_ttl(command[1]) != -2;
 
         if !exists {
-            return "Key does not exist".to_string();
+            return "Not found".to_string();
         }
 
         db.set_ttl(command[1].to_string(), -1);
